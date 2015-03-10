@@ -4,25 +4,18 @@ namespace Assets.Scripts
 {
     public class Item : MonoBehaviour
     {
-        public string Type { get; private set; }
-        public int Column { get; private set; }
-        public int Row { get; private set; }
+        public string type;
 
-        public void Init(string type, int col, int row)
-        {
-            Type = type;
-            SetPosition(col, row);
-        }
+        public Cell Cell { get; private set; }
 
-        public void SetPosition(int col, int row)
+        public void SetCell(Cell cell)
         {
-            Column = col;
-            Row = row;
+            Cell = cell;
         }
 
         public bool IsEqual(Item item)
         {
-            return item.Type == Type;
+            return item != null && item.type == type;
         }
     }
 }

@@ -5,85 +5,87 @@ namespace Assets.Scripts
 {
     public class Board : MonoBehaviour
     {
+        public Vector2 bottomRight = new Vector2(-2.37f, -4.27f);
+        public Vector2 cellSize = new Vector2(0.7f, 0.7f);
         public int rows = 12;
         public int columns = 8;
         public int minMatches = 3;
 
-        private Item[,] items;
+        private Cell[,] cells;
 
-        private Item lastSwappedItem1;
-        private Item lastSwappedItem2;
+        private Cell lastSwappedCell1;
+        private Cell lastSwappedCell2;
 
-        public Item this[int row, int column]
+        public Cell this[int row, int column]
         {
-            get { return items[row, column]; }
-            set { items[row, column] = value; }
+            get { return cells[row, column]; }
+            set { cells[row, column] = value; }
         }
 
-        private void Start()
+        private void Awake()
         {
-            items = new Item[rows, columns];
+            cells = new Cell[rows, columns];
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < columns; col++)
+                {
+                    cells[row, col] = new Cell(row, col);
+                }
+            }
         }
 
-        public void Swap(Item item1, Item item2)
+        public void Swap(Cell cell1, Cell cell2)
         {
-            lastSwappedItem1 = item1;
-            lastSwappedItem2 = item2;
+            lastSwappedCell1 = cell1;
+            lastSwappedCell2 = cell2;
 
-            int item1Row = item1.Row;
-            int item1Col = item1.Column;
-
-            int item2Row = item2.Row;
-            int item2Col = item2.Column;
-
-            items[item1Row, item1Col] = item2;
-            items[item2Row, item2Col] = item1;
-
-            item1.SetPosition(item2Row, item2Col);
-            item2.SetPosition(item1Row, item1Col);
+            Item item1 = cell1.Item;
+            cell1.SetItem(cell2.Item);
+            cell2.SetItem(item1);
         }
 
         public void UndoLastSwap()
         {
-            Swap(lastSwappedItem1, lastSwappedItem2);
+            Swap(lastSwappedCell1, lastSwappedCell2);
         }
 
-        public IEnumerable<Item> GetMatches(IEnumerable<Item> itemArray)
+        public IEnumerable<Cell> GetMatches(IEnumerable<Cell> cellArray)
         {
-            List<Item> matches = new List<Item>();
+            List<Cell> matches = new List<Cell>();
 
-            foreach (var item in itemArray)
+            foreach (var cell in cellArray)
             {
-                matches.AddRange(GetMatch(item).Items);
+                matches.AddRange(GetMatch(cell).Cells);
             }
 
             return matches.ToArray();
         }
 
-        public Match GetMatch(Item item)
+        public Match GetMatch(Cell cell)
         {
             Match match = new Match();
 
-            match.AddItemRange(GetMatchesHorizontally(item));
-            match.AddItemRange(GetMatchesVertically(item));
+            match.AddCellRange(GetMatchesHorizontally(cell));
+            match.AddCellRange(GetMatchesVertically(cell));
 
             return match;
         }
 
-        private IEnumerable<Item> GetMatchesHorizontally(Item item)
+        private IEnumerable<Cell> GetMatchesHorizontally(Cell cell)
         {
-            List<Item> matches = new List<Item>();
-            matches.Add(item);
+            List<Cell> matches = new List<Cell>();
+            matches.Add(cell);
 
             //Left items
-            if (item.Column != 0)
+            if (cell.Column != 0)
             {
-                for (int column = item.Column - 1; column >= 0; column--)
+                for (int column = cell.Column - 1; column >= 0; column--)
                 {
-                    Item leftItem = items[item.Row, column];
-                    if (leftItem.IsEqual(item))
+                    Cell left = cells[cell.Row, column];
+                    if (left.IsMatched(cell))
                     {
-                        matches.Add(leftItem);
+                        matches.Add(left);
                     }
                     else
                     {
@@ -93,14 +95,14 @@ namespace Assets.Scripts
             }
 
             //Right items
-            if (item.Column != columns - 1)
+            if (cell.Column != columns - 1)
             {
-                for (int column = item.Column + 1; column < columns; column++)
+                for (int column = cell.Column + 1; column < columns; column++)
                 {
-                    Item rightItem = items[item.Row, column];
-                    if (rightItem.IsEqual(item))
+                    Cell right = cells[cell.Row, column];
+                    if (right.IsMatched(cell))
                     {
-                        matches.Add(rightItem);
+                        matches.Add(right);
                     }
                     else
                     {
@@ -118,20 +120,20 @@ namespace Assets.Scripts
             return matches.ToArray();
         }
 
-        private IEnumerable<Item> GetMatchesVertically(Item item)
+        private IEnumerable<Cell> GetMatchesVertically(Cell cell)
         {
-            List<Item> matches = new List<Item>();
-            matches.Add(item);
+            List<Cell> matches = new List<Cell>();
+            matches.Add(cell);
 
             //Bottom items
-            if (item.Row != 0)
+            if (cell.Row != 0)
             {
-                for (int row = item.Row - 1; row >= 0; row--)
+                for (int row = cell.Row - 1; row >= 0; row--)
                 {
-                    Item bottomItem = items[row, item.Column];
-                    if (bottomItem.IsEqual(item))
+                    Cell bottom = cells[row, cell.Column];
+                    if (bottom.IsMatched(cell))
                     {
-                        matches.Add(bottomItem);
+                        matches.Add(bottom);
                     }
                     else
                     {
@@ -141,14 +143,14 @@ namespace Assets.Scripts
             }
 
             //Top items
-            if (item.Row != columns - 1)
+            if (cell.Row != columns - 1)
             {
-                for (int row = item.Row + 1; row < rows; row++)
+                for (int row = cell.Row + 1; row < rows; row++)
                 {
-                    Item topItem = items[row, item.Column];
-                    if (topItem.IsEqual(item))
+                    Cell top = cells[row, cell.Column];
+                    if (top.IsMatched(cell))
                     {
-                        matches.Add(topItem);
+                        matches.Add(top);
                     }
                     else
                     {
@@ -164,11 +166,6 @@ namespace Assets.Scripts
             }
 
             return matches.ToArray();
-        }
-
-        private void Remove(Item item)
-        {
-            items[item.Row, item.Column] = null;
         }
 
         public Collapse CollapseColumns(IEnumerable<int> columnArray)
@@ -179,22 +176,21 @@ namespace Assets.Scripts
             {
                 for (int row = 0; row < rows - 1; row++)
                 {
-                    if (items[row, column] == null)
+                    if (cells[row, column] == null)
                     {
                         for (int row2 = row + 1; row2 < rows; row2++)
                         {
-                            if (items[row2, column] != null)
+                            if (cells[row2, column] != null)
                             {
-                                Item item = items[row2, column];
+                                Cell cell1 = cells[row, column];
+                                Cell cell2 = cells[row2, column];
 
-                                items[row, column] = item;
-                                items[row2, column] = null;
+                                cell1.SetItem(cell2.Item);
+                                cell2.Clear();
                                 
                                 collapse.MaxDistance = Mathf.Max(row2 - row, collapse.MaxDistance);
 
-                                item.SetPosition(row, column);
-
-                                collapse.AddItem(item);
+                                collapse.AddCell(cell1);
                                 break;
                             }
                         }
@@ -203,6 +199,32 @@ namespace Assets.Scripts
             }
 
             return collapse;
+        }
+
+        public IEnumerable<Cell> GetEmptyCellsOnColumn(int column)
+        {
+            List<Cell> emptyCells = new List<Cell>();
+
+            for (int row = 0; row < rows; row++)
+            {
+                if (cells[row, column].IsEmpty)
+                {
+                    emptyCells.Add(cells[row, column]);
+                }
+            }
+
+            return emptyCells;
+        }
+
+        public void Clear()
+        {
+            for (int row = 0; row < rows; row++)
+            {
+                for (int col = 0; col < columns; col++)
+                {
+                    cells[row, col].Clear();
+                }
+            }
         }
     }
 }

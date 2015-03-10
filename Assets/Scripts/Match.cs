@@ -4,26 +4,26 @@ namespace Assets.Scripts
 {
     public class Match
     {
-        private List<Item> items = new List<Item>();
+        private List<Cell> cells = new List<Cell>();
 
-        public IEnumerable<Item> Items
+        public IEnumerable<Cell> Cells
         {
-            get { return items.ToArray(); }
+            get { return cells.ToArray(); }
         }
 
-        public void AddItem(Item item)
+        public void AddCell(Cell cell)
         {
-            if (!items.Contains(item))
+            if (!cells.Contains(cell))
             {
-                items.Add(item);
+                cells.Add(cell);
             }
         }
 
-        public void AddItemRange(IEnumerable<Item> itemArray)
+        public void AddCellRange(IEnumerable<Cell> cellArray)
         {
-            foreach (var item in itemArray)
+            foreach (var cell in cellArray)
             {
-                AddItem(item);
+                AddCell(cell);
             }
         }
     }
