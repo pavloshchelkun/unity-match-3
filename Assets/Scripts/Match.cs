@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Assets.Scripts
 {
@@ -8,7 +9,12 @@ namespace Assets.Scripts
 
         public IEnumerable<Cell> Cells
         {
-            get { return cells.ToArray(); }
+            get { return cells.Distinct(); }
+        }
+
+        public int Count
+        {
+            get { return cells.Count; }
         }
 
         public void AddCell(Cell cell)
@@ -25,6 +31,11 @@ namespace Assets.Scripts
             {
                 AddCell(cell);
             }
+        }
+
+        public void Clear()
+        {
+            cells.Clear();
         }
     }
 }

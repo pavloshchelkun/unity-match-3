@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -59,7 +60,7 @@ namespace Assets.Scripts
                 matches.AddRange(GetMatch(cell).Cells);
             }
 
-            return matches.ToArray();
+            return matches.Distinct();
         }
 
         public Match GetMatch(Cell cell)
@@ -117,7 +118,7 @@ namespace Assets.Scripts
                 matches.Clear();
             }
 
-            return matches.ToArray();
+            return matches.Distinct();
         }
 
         private IEnumerable<Cell> GetMatchesVertically(Cell cell)
@@ -165,29 +166,36 @@ namespace Assets.Scripts
                 matches.Clear();
             }
 
-            return matches.ToArray();
+            return matches.Distinct();
         }
 
         public Collapse CollapseColumns(IEnumerable<int> columnArray)
         {
             Collapse collapse = new Collapse();
 
+            //search in every column
             foreach (var column in columnArray)
             {
+                //begin from bottom row
                 for (int row = 0; row < rows - 1; row++)
                 {
-                    if (cells[row, column] == null)
+                    //if you find a null item
+                    if (cells[row, column].IsEmpty)
                     {
+                        //start searching for the first non-null
                         for (int row2 = row + 1; row2 < rows; row2++)
                         {
-                            if (cells[row2, column] != null)
+                            //if you find one, bring it down (i.e. replace it with the null you found)
+                            if (!cells[row2, column].IsEmpty)
                             {
                                 Cell cell1 = cells[row, column];
                                 Cell cell2 = cells[row2, column];
 
+                                //assign the item
                                 cell1.SetItem(cell2.Item);
                                 cell2.Clear();
-                                
+
+                                //calculate the biggest distance
                                 collapse.MaxDistance = Mathf.Max(row2 - row, collapse.MaxDistance);
 
                                 collapse.AddCell(cell1);
