@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
@@ -15,6 +16,7 @@ namespace Assets.Scripts
         }
 
         public Board board;
+        public Text scoreText;
         public Item[] itemPrefabs;
         public GameObject[] effectPrefabs;
         public float swapDuration;
@@ -30,11 +32,29 @@ namespace Assets.Scripts
 
         private void Start()
         {
+            Restart();
+        }
+
+        public void Restart()
+        {
+            score = 0;
             GenerateItems();
+            UpdateScore();
         }
 
         private void GenerateItems()
         {
+            for (int row = 0; row < board.rows; row++)
+            {
+                for (int col = 0; col < board.columns; col++)
+                {
+                    if (!board[row, col].IsEmpty)
+                    {
+                        Destroy(board[row, col].Item.gameObject);
+                    }
+                }
+            }
+
             board.Clear();
 
             spawnPoints = new Vector2[board.columns];
@@ -255,6 +275,12 @@ namespace Assets.Scripts
         private void AddScore(int points)
         {
             score += points;
+            UpdateScore();
+        }
+
+        private void UpdateScore()
+        {
+            scoreText.text = "Score: " + score;
         }
     }
 }
