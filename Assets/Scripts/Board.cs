@@ -144,7 +144,7 @@ namespace Assets.Scripts
             }
 
             //Top items
-            if (cell.Row != columns - 1)
+            if (cell.Row != rows - 1)
             {
                 for (int row = cell.Row + 1; row < rows; row++)
                 {
